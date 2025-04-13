@@ -38,20 +38,15 @@ function displayMenu(){
     console.log("2. View Recent Books");
     console.log("3. Quit");
 
-    // const rlMenu = readline.createInterface({
-    //     input: process.stdin,
-    //     output: process.stdout
-    // });
-
     rl.question("Choose an option: ", (choice) => {
-        if (choice === '1'){
+        if (choice === '1' || choice === 'Search' || choice === 'search'){
             rl.question("Enter a book title or author to search: ", (query) => {
                 getData(query);
                 
             });
         } else if (choice === '2') {
             displayRecentBooksMenu();
-        } else if (choice === '3') {
+        } else if (choice === '3' || choice === 'Quit' || choice === 'quit') {
             console.log('"Reading gives you the ability to reach higher ground and keep climbing," - Oprah Winfrey ');
             console.log('Goodbye!');
             rl.close();
@@ -72,7 +67,7 @@ async function fetchAndDisplayBook(bookID) {
             return;
         }
 
-        // Get the plain text URL
+        // Gets the plain text URL
         const textUrl = bookDetails.formats['text/plain; charset=us-ascii'];
         if (!textUrl) {
             console.log("Plain text version of the book is not available.");
@@ -80,15 +75,15 @@ async function fetchAndDisplayBook(bookID) {
         }
 
         // Fetch the book text
-        const textResponse = await fetchErrorHandling(textUrl);
-        if (!textResponse) {
+        const response = await fetch(textUrl); // Copilot
+        if (!response.ok) {
             console.log("Failed to fetch the book text.");
             return;
         }
 
         // Split the book text into words
-        const bookText = textResponse;
-        const words = bookText.split(/\s+/);
+        const bookText = await response.text();
+        const words = bookText.split(/\s+/); // Copilot
         console.log(`Total words: ${words.length}`); // Debugging
         const pageSize = 200; // Number of words per page
         let currentPage = 0;
@@ -155,17 +150,11 @@ async function getData(str){
             console.log(`${index + 1}. ${book.id} - ${book.title} by ${book.authors.map(author => author.name).join(', ')}`);
         });
 
-        // const rl = readline.createInterface({
-        //     input: process.stdin,
-        //     output: process.stdout
-        // });
-
         rl.question("Choose a book ID: ", async (answer) => {
             const choice = parseInt(answer);
             // console.log(choice);
             
-            // Copilot
-            const selectedBook = json.results.find(book => book.id === choice);
+            const selectedBook = json.results.find(book => book.id === choice); // Copilot
             if (!selectedBook) {
                 console.log("Sorry. That book ID is not connected with any book.");
                 displayMenu();
@@ -173,8 +162,8 @@ async function getData(str){
             }
             console.log(`You selected ${selectedBook.title}`);
             addToRecentBooks(selectedBook);
-            await fetchAndDisplayBook(selectedBook.id);
-            displayMenu();
+            fetchAndDisplayBook(selectedBook.id);
+            // displayMenu();
             
         });
     } catch (error) {
@@ -184,8 +173,6 @@ async function getData(str){
     
 }
 
-// Copilot 
-
 // For results, we need text/plain result for book results
 // We need to use square bracket notation to get the book result
 
@@ -193,7 +180,7 @@ async function getData(str){
 const recentBooks = [];
 
 function addToRecentBooks(book){
-    const existingIndex = recentBooks.findIndex(b => b.id === book.id);
+    const existingIndex = recentBooks.findIndex(b => b.id === book.id); // Copilot
     if (existingIndex !== -1) {
         recentBooks.splice(existingIndex, 1);
     }
